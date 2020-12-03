@@ -1,10 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 #include <termios.h>
-#include <fcntl.h>
 #include <sys/ioctl.h>
+#include <sys/wait.h>
 #include <proc/readproc.h>
 #include <proc/sysinfo.h>
 // #include <unistd.h>
@@ -118,20 +117,21 @@ void ui(Array *arr, unsigned int top, unsigned int current, char s) {
 	if (s == 1) setbgcolor(30);
 	printf("Program                             \t"); setbgcolor(0);
 	if (s == 2) setbgcolor(30);
-	printf("PID\t"); setbgcolor(0);
+	printf("PID  \t"); setbgcolor(0);
 	if (s == 3) setbgcolor(30);
 	printf("PPID\t"); setbgcolor(0);
 	if (s == 4) setbgcolor(30);
-	printf("PGRP\t"); setbgcolor(0);
+	printf("PGRP  \t"); setbgcolor(0);
 	if (s == 5) setbgcolor(30);
-	printf("PMEM\t"); setbgcolor(0);
+	printf("PMEM \t"); setbgcolor(0);
 	if (s == 6) setbgcolor(30);
-	printf("TTY\t"); setbgcolor(0);
+	printf("TTY   \t"); setbgcolor(0);
 	if (s == 7) setbgcolor(30);
-	printf("PCPU\n"); setbgcolor(0);
+	printf("PCPU \n"); setbgcolor(0);
+
 	for (unsigned int it = top; it < top + screensize; ++it) {
 		setfgcolor(0);
-		if (it == current) setfgcolor(36);
+		if (it == current) setfgcolor(33);
 		printf(
 			"%36s\t%5d\t%4d\t%6lld\t%3.2f\t%6lld\t%3.2f\n", 
 			arr->data[it].program, arr->data[it].pid, 
@@ -219,6 +219,7 @@ int main() {
 			if (current < arr.used - 1) current++;
 			if (current - top == screensize - 2 && top < arr.used - screensize) top++;
 		}
+		if (str[0] == 'k') kill(arr.data[current].pid, SIGKILL);
 		if (str[0] == '1') { s1 = 1; s2 = 0; s3 = 0; s4 = 0; s5 = 0; s6 = 0; s7 = 0; s = 1; }
 		if (str[0] == '2') { s1 = 0; s2 = 1; s3 = 0; s4 = 0; s5 = 0; s6 = 0; s7 = 0; s = 2; }
 		if (str[0] == '3') { s1 = 0; s2 = 0; s3 = 1; s4 = 0; s5 = 0; s6 = 0; s7 = 0; s = 3; }
@@ -235,165 +236,6 @@ int main() {
 
 	return 0;
 }
-
-// int height(struct Tree *N) { 
-// 	return N == NULL ? 0 : N->height; 
-// }
-
-// int max(int a, int b) { 
-// 	return (a > b) ? a : b; 
-// } 
-
-// struct Tree* new_node(struct Data data) { 
-// 	struct Tree* node = (struct Tree*)malloc(sizeof(struct Tree)); 
-
-// 	node->data.program = (char *)calloc(strlen(data.program) + 1, sizeof(char));
-// 	strcpy(node->data.program, data.program);
-// 	node->data.pid = data.pid;
-// 	node->data.ppid = data.ppid;
-// 	node->data.mem = data.mem;
-// 	node->data.pgrp = data.pgrp;
-// 	node->data.tty = data.tty;
-// 	node->data.pcpu = data.pcpu;
-// 	node->data.mem_sum = data.mem;
-// 	node->data.pcpu_sum = data.pcpu;
-// 	node->data.same = NULL;
-
-// 	node->left = NULL; 
-// 	node->right = NULL; 
-// 	node->height = 1;
-// 	return node; 
-// } 
-  
-// struct Tree *right_rotate(struct Tree *y) { 
-// 	struct Tree *x = y->left; 
-// 	struct Tree *T2 = x->right; 
-  
-// 	x->right = y; 
-// 	y->left = T2; 
-  
-// 	y->height = max(height(y->left), height(y->right))+1; 
-// 	x->height = max(height(x->left), height(x->right))+1; 
-  
-// 	return x; 
-// } 
-
-// struct Tree *left_rotate(struct Tree *x) { 
-// 	struct Tree *y = x->right; 
-// 	struct Tree *T2 = y->left; 
-
-// 	y->left = x; 
-// 	x->right = T2; 
-
-// 	x->height = max(height(x->left), height(x->right))+1; 
-// 	y->height = max(height(y->left), height(y->right))+1; 
-
-// 	return y; 
-// } 
-
-// int get_balance(struct Tree *N) { 
-// 	return N == NULL ? 0 : height(N->left) - height(N->right); 
-// } 
-
-// struct Tree* insert(struct Tree* node, struct Data key)  { 
-// 	if (node == NULL) 
-// 		return(new_node(key)); 
-
-// 	if (strcmp(key.program, node->data.program) == 0) {
-// 		node->data.pcpu_sum += key.pcpu;
-// 		node->data.mem_sum += key.mem;
-		
-
-// 		struct Data *data = &node->data;
-
-// 		while (data->same != NULL) { 
-// 			data = data->same;
-// 		}
-// 		data->same = (struct Data*)malloc(sizeof(struct Data)); 
-
-// 		data->same->program = (char *)calloc(strlen(key.program) + 1, sizeof(char));
-// 		strcpy(data->same->program, key.program);
-// 		data->same->pid = key.pid;
-// 		data->same->ppid = key.ppid;
-// 		data->same->mem = key.mem;
-// 		data->same->pgrp = key.pgrp;
-// 		data->same->tty = key.tty;
-// 		data->same->pcpu = key.pcpu;
-// 		data->same->same = NULL;
-
-// 		return node; 
-// 	}
-
-// 	if (strcmp(key.program, node->data.program) < 0) 
-// 		node->left  = insert(node->left, key); 
-// 	else if (strcmp(key.program, node->data.program) > 0) 
-// 		node->right = insert(node->right, key);
-		
-
-// 	node->height = 1 + max(height(node->left), height(node->right)); 
-
-// 	int balance = get_balance(node); 
-
-// 	if (balance > 1 && strcmp(key.program, node->left->data.program) < 0) 
-// 		return right_rotate(node); 
-
-// 	if (balance < -1 && strcmp(key.program, node->right->data.program) > 0) 
-// 		return left_rotate(node); 
-
-// 	if (balance > 1 && strcmp(key.program, node->left->data.program) > 0) { 
-// 		node->left = left_rotate(node->left); 
-// 		return right_rotate(node); 
-// 	} 
-
-// 	if (balance < -1 && strcmp(key.program, node->right->data.program) < 0) { 
-// 		node->right = right_rotate(node->right); 
-// 		return left_rotate(node); 
-// 	} 
-
-// 	return node; 
-// }
-
-// void delete_tree(struct Tree *node) {
-// 	if (node != NULL) {
-// 		delete_tree(node->left);
-// 		delete_tree(node->right);
-// 		// if (node->data->same != NULL)
-// 		free(node);
-// 	}
-// }
-
-// void output(struct Tree *node) { 
-// 	if(node != NULL) { 
-// 		output(node->left); 
-// 		printf(
-// 			"%36s\t%5d\t%4d\t%6lld\t%3.2f\t%6lld\t%3.2f\n", 
-// 			node->data.program, node->data.pid, 
-// 			node->data.ppid, node->data.pgrp, 
-// 			node->data.mem_sum, node->data.tty, node->data.pcpu_sum
-// 		);
-// 		output(node->right); 
-// 	} 
-// } 
-
-// struct Data *find(struct Tree *node, char* key) {
-// 	if (strcmp(key, node->data.program) < 0) 
-// 		find(node->left, key); 
-// 	else if (strcmp(key, node->data.program) > 0) 
-// 		find(node->right, key);
-// 	else return &node->data;
-// }
-
-// void print_elem(struct Data *data) {
-// 	while (data->same != NULL) {
-// 		printf(
-// 			"%36s\t%5d\t%4d\t%6lld\t%3.2f\t%6lld\t%3.2f\n", 
-// 			data->program, data->pid, 
-// 			data->ppid, data->pgrp, 
-// 			data->mem, data->tty, data->pcpu
-// 		);
-// 		data = data->same;
-// 	}
-// }
 
 // static void skeleton_daemon()
 // {
