@@ -1,77 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <termios.h>
-#include <sys/ioctl.h>
-#include <fcntl.h>
-#include <sys/wait.h>
-#include <proc/readproc.h>
-#include <proc/sysinfo.h>
-#include <unistd.h>
-#include <signal.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <syslog.h>
-
-const unsigned int screensize = 20;
-
-typedef struct {
-	char program[36];
-	int pid;
-	int ppid;
-	float mem;
-	long long unsigned int pgrp;
-	long long unsigned int tty;
-	float pcpu;
-} Data;
-
-typedef struct {
-	Data *data;
-	unsigned int used;
-	unsigned int size;
-} Array;
-
-void init_array(Array *arr, size_t initialSize) {
-	arr->data = (Data *)calloc(initialSize, sizeof(Data));
-
-	arr->used = 0;
-	arr->size = initialSize;
-}
-
-void insert_array(Array *arr, Data element) {
-	strcpy(arr->data[arr->used].program, element.program);
-	arr->data[arr->used].pid = element.pid;
-	arr->data[arr->used].ppid = element.ppid;
-	arr->data[arr->used].mem = element.mem;
-	arr->data[arr->used].pgrp = element.pgrp;
-	arr->data[arr->used].tty = element.tty;
-	arr->data[arr->used].pcpu = element.pcpu;
-
-	arr->used++;
-}
-
-void free_array(Array *arr) {
-	free(arr->data);
-	arr->data = NULL;
-
-	arr->used = 0;
-	arr->size = 0;
-}
-
-int cmp_1(Data *a, Data *b) {
-	char 
-		*a1 = (char *)calloc(strlen(a->program) + 1, sizeof(char)),
-		*b1 = (char *)calloc(strlen(b->program) + 1, sizeof(char));
-	for(unsigned int it = 0; a->program[it]; ++it) 	a1[it] = tolower(a->program[it]);
-	for(unsigned int it = 0; b->program[it]; ++it) 	b1[it] = tolower(b->program[it]);
-	return strcmp(a1, b1);
-}
-int cmp_2(Data *a, Data *b) { return a->pid > b->pid; }
-int cmp_3(Data *a, Data *b) { return a->ppid > b->ppid; }
-int cmp_4(Data *a, Data *b) { return a->pgrp > b->pgrp; }
-int cmp_5(Data *a, Data *b) { return b->mem > a->mem; }
-int cmp_6(Data *a, Data *b) { return b->tty > a->tty; }
-int cmp_7(Data *a, Data *b) { return b->pcpu > a->pcpu; }
+#include "smth.h"
 
 int main() {
 	pid_t pid, sid;
@@ -98,7 +25,6 @@ int main() {
 	proc_t proc_info;
 	PROCTAB* proc;
 	char s1 = 0, s2 = 0, s3 = 0, s4 = 0, s5 = 0, s6 = 0, s7 = 0, s = -1;
-	unsigned int top = 0, current = 0;
 
 	mkfifo("ui_d", 0666);
 	mkfifo("d_ui", 0666);
@@ -123,7 +49,6 @@ int main() {
 			meminfo();
 
 			float pmem = proc_info.vm_rss * 1000ULL / kb_main_total;
-			if (pmem > 999) pmem = 999;
 			data.mem = pmem / 10;
 
 			long long unsigned int 
@@ -141,7 +66,6 @@ int main() {
 		read(ui_d, str, sizeof(str) + 1);
 		printf("%s\n", str);
 		close(ui_d);
-		// return 0;
 
 		if (str[0] == '1') { s1 = 1; s2 = 0; s3 = 0; s4 = 0; s5 = 0; s6 = 0; s7 = 0; s = 1; }
 		if (str[0] == '2') { s1 = 0; s2 = 1; s3 = 0; s4 = 0; s5 = 0; s6 = 0; s7 = 0; s = 2; }
@@ -192,9 +116,6 @@ int main() {
 			free_array(&arr);
 			continue;
 		}
-		if (str[0] == '\033' && str[2] == 'A') { if (current > 0) current--; continue; }
-		if (str[0] == '\033' && str[2] == 'B') { if (current < arr.used - 1) current++; continue; }
-		if (str[0] == 'k') { kill(arr.data[current].pid, SIGKILL); continue; }
 
 		closeproc(proc);
 		free_array(&arr);
