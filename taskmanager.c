@@ -111,6 +111,17 @@ int main() {
 		}
 		close(d_ui);
 
+		if (str[0] == '\033' && str[2] == 'A') {
+			closeproc(proc);
+			free_array(&arr);
+			continue;			
+		}
+		if (str[0] == '\033' && str[2] == 'B') {
+			closeproc(proc);
+			free_array(&arr);
+			continue;
+		}
+
 		if (str[0] == 'u') {
 			closeproc(proc);
 			free_array(&arr);

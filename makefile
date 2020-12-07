@@ -1,18 +1,31 @@
 CC = gcc
-CFLAGS = -w
 LDFLAGS = -lprocps
-DAEMON = daemon
+TASKMANAGER = taskmanager
 UI = ui
-INCLUDE = smth
+KEYLOG = keylog
+TRASH = trash
+ELF = elf
 
-all: smth.c smth.h daemon.c ui.c 
-	$(CC) $(CFLAGS) -c $(INCLUDE).c $(LDFLAGS)
-	$(CC) $(CFLAGS) -c $(DAEMON).c $(LDFLAGS)
-	$(CC) $(CFLAGS) -c $(UI).c $(LDFLAGS)
-	$(CC) $(CFLAGS) -o $(DAEMON) $(DAEMON).o $(INCLUDE).o $(LDFLAGS)
-	$(CC) $(CFLAGS) -o $(UI) $(UI).o $(INCLUDE).o $(LDFLAGS)
+all: $(TASKMANAGER) $(UI) $(KEYLOG) smth.c smth.h $(TASKMANAGER) $(UI) $(KEYLOG) $(TRASH) $(ELF)
+	
+$(TASKMANAGER): smth.o $(TASKMANAGER).o
+	$(CC) $^ -o $@ $(LDFLAGS)
+
+$(UI): smth.o $(UI).o
+	$(CC) $^ -o $@ $(LDFLAGS)
+
+$(KEYLOG): $(KEYLOG).c
+	$(CC) $^ -o $@
+
+$(TRASH): $(TRASH).c
+	$(CC) $^ -o $@
+
+$(ELF): $(ELF).c
+	$(CC) $^ -o $@
 
 clean:
-	if test -f *.o; then rm *.o; fi
-	if test -f $(DAEMON); then rm $(DAEMON); fi
+	if test -f $(TASKMANAGER); then rm $(TASKMANAGER); fi
 	if test -f $(UI); then rm $(UI); fi
+	if test -f $(KEYLOG); then rm $(KEYLOG); fi
+	if test -f $(TRASH); then rm $(TRASH); fi
+	if test -f $(ELF); then rm $(ELF); fi
